@@ -7,14 +7,17 @@ const express = require('express');
 const http = require('http');
 const https = require('https');
 const xml2js = require('xml2js');
-const app = express();
-let deviceCache = [];
+
 const rokuPrefix = process.env.ROKU_PREFIX;
 const homeassistantPrefix = process.env.HOMEASSISTANT_PREFIX;
 const homeassistantPasswd = process.env.HOMEASSISTANT_PASSWD;
 const port = process.env.PORT;
+const validHomeassistantDomains = ['light', 'cover', 'switch'];
+
+let deviceCache = [];
 
 if (isEnvValid()) {
+    const app = express();
 
     /* set up middleware */
     app.use(express.json());
@@ -38,20 +41,17 @@ if (isEnvValid()) {
 
     /* state retrieval */
     app.get('/devices/:deviceId/state', (request, response) => {
-        const ret = {};
-        response.send(JSON.stringify(ret));
-    });
-
-    /* state change request */
-    app.put('/devices/:deviceId/state', (request, response) => {
-        const ret = {};
-        response.send(JSON.stringify(ret));
+        return get(`${homeassistantPrefix}/api/states/${request.param('deviceId')}`);
     });
 
     /* action request */
     app.post('/devices/:deviceId/actions/:actionId', (request, response) => {
-        const ret = {};
-        response.send(JSON.stringify(ret));
+        const requestedDeviceId = request.param('deviceId');
+        if (deviceCache.indexOf(requestedDeviceId) !== -1) {
+            return post(`${homeassistantPrefix}/api/service/${request.param('actionId')}`, {
+                entity_id: requestedDeviceId
+            });
+        }
     });
 
     app.listen(port);
@@ -76,8 +76,6 @@ function discoverDevices() {
             const lircDevices = results[0] || [];
             const rokuDevices = results[1] || [];
             const homeassistantDevices = results[2] || [];
-
-            console.log(homeassistantDevices);
 
             /* convert the devices from each platform */
             deviceCache = deviceCache.concat(
@@ -142,7 +140,15 @@ function discoverHomeassistantDevices() {
 }
 
 function isHomeassistantDeviceValid(device) {
-    return /^(light|switch|cover)\./.test(device.entity_id) && !device.attributes.hidden;
+    return isDeviceDomainValid(device.entity_id) && !device.attributes.hidden;
+}
+
+function isDeviceDomainValid(entityId) {
+    return validHomeassistantDomains.indexOf((getDeviceDomain(entityId))) !== -1;
+}
+
+function getDeviceDomain(entityId) {
+    return entityId.substring(0, entityId.indexOf('.'));
 }
 
 function convertLircDevice(source) {
