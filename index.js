@@ -17,35 +17,30 @@ const missCooldownMs = parseInt(process.env.MISS_COOLDOWN_MIN) * 60000;
 const missThreshold = parseInt(process.env.MISS_THRESHOLD);
 const maxArgLength = parseInt(process.env.MAX_ARG_LENGTH);
 
-const rokuPlayback = [
-    'Home',
-    'Rev',
-    'Fwd',
-    'Play',
-    'Select',
-    'Left',
-    'Right',
-    'Down',
-    'Up',
-    'Back',
-    'InstantReplay',
-    'Info',
-    'Backspace',
-    'Search',
-    'Enter',
-    'VolumeDown',
-    'VolumeMute',
-    'VolumeUp',
-    'PowerOff'
-];
+const rokuCapabilities = {
+    StartOver: 'Home',
+    Rewind: 'Rev',
+    FastForward: 'Fwd',
+    Play: 'Play',
+    Previous: 'Back',
+    Next: 'Select',
+    SetMute: 'VolumeMute'
+};
 
-const lircCapabilities = [
-    'KEY_POWER',
-    'KEY_VOLUMEUP',
-    'KEY_VOLUMEDOWN',
-    'KEY_CHANNELUP',
-    'KEY_CHANNELDOWN'
-];
+const lircCapabilities = {
+    TurnOn: 'KEY_POWER',
+    TurnOff: 'KEY_POWER',
+    SetMute: 'KEY_MUTE'
+};
+
+const rokuAppCapabilities = {
+    TurnOn: 'launch'
+};
+
+const homeassistantCapabilities = {
+    TurnOn: 'turn_on',
+    TurnOff: 'turn_off'
+};
 
 const homeassistantOptions = {
     headers: {
@@ -107,7 +102,7 @@ function discoverDevices(storeInCache) {
                     id: 'roku',
                     platform: 'roku',
                     name: 'Roku',
-                    capabilities: rokuPlayback
+                    capabilities: rokuCapabilities
                 });
             }
 
@@ -357,7 +352,7 @@ function convertRokuApp(source) {
         id: source['$'].id,
         platform: 'rokuapp',
         name: source['_'],
-        capabilities: ['launch']
+        capabilities: rokuAppCapabilities
     };
 }
 
@@ -366,7 +361,7 @@ function convertEntity(source) {
         id: source.entity_id,
         platform: 'homeassistant',
         name: source.attributes.friendly_name,
-        capabilities: ['toggle', 'turn_on', 'turn_off']
+        capabilities: homeassistantCapabilities
     };
 }
 
@@ -378,10 +373,10 @@ function convertEntityState(source) {
 }
 
 function request(uri, options, rawPostData) {
-    const comps = uri.replace('//', '').split(':');
+    const uriComps = uri.replace('//', '').split(':');
     const postData = typeof rawPostData === 'object' ? JSON.stringify(rawPostData) : rawPostData;
-    if (isCompsValid(comps)) {
-        const [protocol, hostname, portAndPath] = comps;
+    if (isUriCompsValid(uriComps)) {
+        const [protocol, hostname, portAndPath] = uriComps;
         const port = portAndPath.substring(0, portAndPath.indexOf('/'));
         const path = portAndPath.substring(portAndPath.indexOf('/'));
         const mergedOptions = {
@@ -424,8 +419,8 @@ function request(uri, options, rawPostData) {
     }
 }
 
-function isCompsValid(comps) {
-    return comps.length === 3 && /https?/.test(comps[0]) && /^[A-Z0-9\-_.]+$/i.test(comps[1]) && /^[0-9]{3,5}\/[A-Z0-9\-_~]*/i.test(comps[2]);
+function isUriCompsValid(uriComps) {
+    return uriComps.length === 3 && /https?/.test(uriComps[0]) && /^[A-Z0-9\-_.]+$/i.test(uriComps[1]) && /^[0-9]{3,5}\/[A-Z0-9\-_~]*/i.test(uriComps[2]);
 }
 
 function get(uri, options) {
