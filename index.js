@@ -102,6 +102,7 @@ function discoverDevices(storeInCache) {
                     id: 'roku',
                     platform: 'roku',
                     name: 'Roku',
+                    manufacturer: 'Roku',
                     capabilities: rokuCapabilities
                 });
             }
@@ -239,9 +240,10 @@ function discoverLircDevices() {
     return exec('systemctl status lircd | grep "Active: active (running)"')
         .then(result => checkExecResult(result))
         .then(result => [{
-            id: 'sharp',
+            id: 'hisense',
             name: 'TV',
             platform: 'lirc',
+            manufacturer: 'Hisense',
             capabilities: lircCapabilities
         }])
         .catch(err => {
@@ -352,6 +354,7 @@ function convertRokuApp(source) {
         id: source['$'].id,
         platform: 'rokuapp',
         name: source['_'],
+        manufacturer: 'Roku',
         capabilities: rokuAppCapabilities
     };
 }
@@ -361,6 +364,7 @@ function convertEntity(source) {
         id: source.entity_id,
         platform: 'homeassistant',
         name: source.attributes.friendly_name,
+        manufacturer: source.attributes.manufacturer_name ? source.attributes.manufacturer_name : 'Home Assistant',
         capabilities: homeassistantCapabilities
     };
 }
