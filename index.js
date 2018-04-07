@@ -133,7 +133,7 @@ function setupServer() {
 
             /* set up the device cache */
             .then(devices => {
-                response.send(JSON.stringify(deviceCache));
+                response.send(JSON.stringify(redact(deviceCache)));
                 response.end();
             })
             .catch(function (err) {
@@ -194,6 +194,14 @@ function setupServer() {
 
     app.listen(port);
     console.log(`server listening on port ${port}...`);
+}
+
+function redact(devices) {
+
+    /* downstream doesn't need to know about the capability mapping, just the capabilities themselves */
+    return devices.map(device => Object.assign({}, device, {
+        capabilities: Object.keys(device.capabilities)
+    }));
 }
 
 function convertRokuState(source) {
