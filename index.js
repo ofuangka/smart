@@ -175,8 +175,8 @@ function setupServer() {
         const requestedActionId = request.params.actionId;
         getDeviceIfAvailable(requestedDeviceId)
             .then(device => {
-                if (device.capabilities.indexOf(requestedActionId) !== -1) {
-                    return sendAction(requestedActionId, device);
+                if (device.capabilities.hasOwnProperty(requestedActionId)) {
+                    return sendAction(device.capabilities[requestedActionId], device);
                 }
                 throw new Error(`device ${requestedDeviceId} is not capable of performing action ${requestedActionId}`);
             })
@@ -227,9 +227,9 @@ function sanitize(s) {
 }
 
 function missCooldown() {
-    console.log('cooling down...');
     const now = Date.now();
     for (let deviceId in deviceIdMisses) {
+        console.log(`cooling down ${deviceId}...`);
         if ((now - deviceIdMisses[deviceId].previousMiss) > missCooldownMs) {
             deviceIdMisses[deviceId].count--;
         }
