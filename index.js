@@ -181,6 +181,7 @@ function setupServer() {
                 throw new Error(`device ${requestedDeviceId} is not capable of performing action ${requestedActionId}`);
             })
             .then(upstreamResponse => {
+
                 response.send(JSON.stringify({
                     id: requestedDeviceId,
                     action: requestedActionId
@@ -220,7 +221,7 @@ function convertRokuState(source) {
 function sendAction(actionId, device) {
     switch (device.platform) {
         case 'homeassistant':
-            return post(`${homeassistantPrefix}/api/service/${sanitize(actionId)}`, homeassistantOptions, {
+            return post(`${homeassistantPrefix}/api/services/${sanitize(getEntityDomain(device.id))}/${sanitize(actionId)}`, homeassistantOptions, {
                 entity_id: sanitize(device.id)
             });
         case 'rokuapp':
