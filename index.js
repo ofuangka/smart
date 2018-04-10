@@ -427,7 +427,7 @@ function request(uri, options, rawPostData) {
                 reject(err);
             });
             if (typeof postData === 'string') {
-                handle.send(postData);
+                handle.write(postData);
             }
             handle.end();
         });
