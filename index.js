@@ -182,6 +182,8 @@ function setupServer() {
             })
             .then(upstreamResponse => {
 
+                console.log(upstreamResponse);
+
                 response.send(JSON.stringify({
                     id: requestedDeviceId,
                     action: requestedActionId
