@@ -197,7 +197,7 @@ function setupServer() {
 }
 
 function unhack(deviceId) {
-    return deviceId.replace(/#/g, '.');
+    return deviceId;
 }
 
 function redact(devices) {
