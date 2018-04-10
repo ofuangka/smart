@@ -17,7 +17,7 @@ const missCooldownMs = parseInt(process.env.MISS_COOLDOWN_MIN) * 60000;
 const missThreshold = parseInt(process.env.MISS_THRESHOLD);
 const maxArgLength = parseInt(process.env.MAX_ARG_LENGTH);
 
-const rokuCapabilities = {
+const rokuActions = {
     StartOver: 'Home',
     Rewind: 'Rev',
     FastForward: 'Fwd',
@@ -27,17 +27,17 @@ const rokuCapabilities = {
     SetMute: 'VolumeMute'
 };
 
-const lircCapabilities = {
+const lircActions = {
     TurnOn: 'KEY_POWER',
     TurnOff: 'KEY_POWER',
     SetMute: 'KEY_MUTE'
 };
 
-const rokuAppCapabilities = {
+const rokuAppActions = {
     TurnOn: 'launch'
 };
 
-const homeassistantCapabilities = {
+const homeassistantActions = {
     TurnOn: 'turn_on',
     TurnOff: 'turn_off'
 };
@@ -103,7 +103,7 @@ function discoverDevices(storeInCache) {
                     platform: 'roku',
                     name: 'Roku',
                     manufacturer: 'Roku',
-                    capabilities: rokuCapabilities
+                    actions: rokuActions
                 });
             }
 
@@ -175,8 +175,8 @@ function setupServer() {
         const requestedActionId = request.params.actionId;
         getDeviceIfAvailable(requestedDeviceId)
             .then(device => {
-                if (device.capabilities.hasOwnProperty(requestedActionId)) {
-                    return sendAction(device.capabilities[requestedActionId], device);
+                if (device.actions.hasOwnProperty(requestedActionId)) {
+                    return sendAction(device.actions[requestedActionId], device);
                 }
                 throw new Error(`device ${requestedDeviceId} is not capable of performing action ${requestedActionId}`);
             })
@@ -198,9 +198,9 @@ function setupServer() {
 
 function redact(devices) {
 
-    /* downstream doesn't need to know about the capability mapping, just the capabilities themselves */
+    /* downstream doesn't need to know about the action mapping, just the actions themselves */
     return devices.map(device => Object.assign({}, device, {
-        capabilities: Object.keys(device.capabilities)
+        actions: Object.keys(device.actions)
     }));
 }
 
@@ -252,7 +252,7 @@ function discoverLircDevices() {
             name: 'TV',
             platform: 'lirc',
             manufacturer: 'Hisense',
-            capabilities: lircCapabilities
+            actions: lircActions
         }])
         .catch(err => {
             console.log(`error discovering lirc devices: ${err}`);
@@ -363,7 +363,7 @@ function convertRokuApp(source) {
         platform: 'rokuapp',
         name: source['_'],
         manufacturer: 'Roku',
-        capabilities: rokuAppCapabilities
+        actions: rokuAppActions
     };
 }
 
@@ -373,7 +373,7 @@ function convertEntity(source) {
         platform: 'homeassistant',
         name: source.attributes.friendly_name,
         manufacturer: source.attributes.manufacturer_name ? source.attributes.manufacturer_name : 'Home Assistant',
-        capabilities: homeassistantCapabilities
+        actions: homeassistantActions
     };
 }
 
