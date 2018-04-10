@@ -144,7 +144,7 @@ function setupServer() {
 
     /* state retrieval */
     app.get('/devices/:deviceId/state', (request, response) => {
-        const requestedDeviceId = request.params.deviceId;
+        const requestedDeviceId = unhack(request.params.deviceId);
         getDeviceIfAvailable(requestedDeviceId)
             .then(device => {
                 switch (device.platform) {
@@ -171,7 +171,7 @@ function setupServer() {
 
     /* action request */
     app.post('/devices/:deviceId/actions/:actionId', (request, response) => {
-        const requestedDeviceId = request.params.deviceId;
+        const requestedDeviceId = unhack(request.params.deviceId);
         const requestedActionId = request.params.actionId;
         getDeviceIfAvailable(requestedDeviceId)
             .then(device => {
@@ -194,6 +194,10 @@ function setupServer() {
 
     app.listen(port);
     console.log(`server listening on port ${port}...`);
+}
+
+function unhack(deviceId) {
+    return deviceId.replace(/#/g, '.');
 }
 
 function redact(devices) {
