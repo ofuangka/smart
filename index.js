@@ -182,8 +182,6 @@ function setupServer() {
             })
             .then(upstreamResponse => {
 
-                console.log(upstreamResponse);
-
                 response.send(JSON.stringify({
                     id: requestedDeviceId,
                     action: requestedActionId
@@ -422,8 +420,12 @@ function request(uri, options, rawPostData) {
                     response.on('data', chunk => {
                         data += chunk;
                     });
-                    response.on('end', result => {
-                        resolve(data);
+                    response.on('end', upstreamResponse => {
+                        if (upstreamResponse.statusCode === 200) {
+                            resolve(data);
+                        } else {
+                            reject(new Error(`HTTP ${response.statusCode}`));
+                        }
                     });
                 });
             handle.on('error', err => {
