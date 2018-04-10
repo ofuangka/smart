@@ -444,7 +444,7 @@ function get(uri, options) {
 }
 
 function post(uri, options, postData) {
-    return request(Object.assign({}, options, { method: 'POST' }), postData);
+    return request(uri, Object.assign({}, options, { method: 'POST' }), postData);
 }
 
 function parseXml(s) {
