@@ -422,9 +422,10 @@ function request(uri, options, rawPostData) {
                     response.on('end', result => {
                         resolve(data);
                     });
-                }).on('error', err => {
-                    reject(err);
                 });
+            handle.on('error', err => {
+                reject(err);
+            });
             if (typeof postData === 'string') {
                 handle.send(postData);
             }
