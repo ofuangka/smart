@@ -420,8 +420,8 @@ function request(uri, options, rawPostData) {
                     response.on('data', chunk => {
                         data += chunk;
                     });
-                    response.on('end', upstreamResponse => {
-                        if (upstreamResponse.statusCode === 200) {
+                    response.on('end', () => {
+                        if (response.statusCode === 200) {
                             resolve(data);
                         } else {
                             reject(new Error(`HTTP ${response.statusCode}`));
