@@ -180,8 +180,8 @@ function setupServer() {
                 }
                 throw new Error(`device ${requestedDeviceId} is not capable of performing action ${requestedActionId}`);
             })
+            .then(JSON.parse)
             .then(upstreamResponse => {
-
                 response.send(JSON.stringify({
                     id: requestedDeviceId,
                     action: requestedActionId
@@ -229,7 +229,8 @@ function sendAction(actionId, device) {
         case 'roku':
             return post(`${rokuPrefix}/keypress/${sanitize(actionId)}`, null, '');
         case 'lirc':
-            return exec(`sudo irsend send_once ${sanitize(device.id)} ${sanitize(actionId)}`);
+            return exec(`sudo irsend send_once ${sanitize(device.id)} ${sanitize(actionId)}`)
+                .then(response => `{"result": "${response}"}`);
         default:
             return Promise.reject(new Error(`unknown device platform ${device.platform}`));
     }
